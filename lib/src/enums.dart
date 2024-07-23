@@ -34,4 +34,26 @@ class PosPrintResult {
       return 'Unknown error';
     }
   }
+
+  String get vietnameseMsg {
+    if (value == PosPrintResult.success.value) {
+      return 'THÀNH CÔNG';
+    } else if (value == PosPrintResult.timeout.value) {
+      return 'LỖI. Kết nối máy in thất bại';
+    } else if (value == PosPrintResult.printerNotSelected.value) {
+      return 'LỖI. Không chọn được máy in';
+    } else if (value == PosPrintResult.ticketEmpty.value) {
+      return 'LỖI. Nội dung in bị trống';
+    } else if (value == PosPrintResult.printInProgress.value) {
+      return 'LỖI. Tiến trình in khác đang được thực hiện';
+    } else if (value == PosPrintResult.scanInProgress.value) {
+      return 'LỖI. Đang trong tiến trình tìm máy in';
+    } else {
+      return 'Có lỗi xảy ra';
+    }
+  }
+
+  bool get isSuccess {
+    return value == PosPrintResult.success.value;
+  }
 }
