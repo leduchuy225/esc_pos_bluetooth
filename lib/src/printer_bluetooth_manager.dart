@@ -26,7 +26,7 @@ class PrinterBluetooth {
 class PrinterBluetoothManager {
   final BluetoothManager _bluetoothManager = BluetoothManager.instance;
   bool _isPrinting = false;
-  bool _isConnected = false;
+  // bool _isConnected = false;
   StreamSubscription? _scanResultsSubscription;
   StreamSubscription? _isScanningSubscription;
   PrinterBluetooth? _selectedPrinter;
@@ -83,26 +83,26 @@ class PrinterBluetoothManager {
       return PosPrintResult.printInProgress;
     }
 
-    if (!_isConnected) {
-      // We have to rescan before connecting, otherwise we can connect only once
-      await _bluetoothManager.startScan(timeout: Duration(seconds: 1));
-      await stopScan();
+    // if (!_isConnected) {
+    // We have to rescan before connecting, otherwise we can connect only once
+    await _bluetoothManager.startScan(timeout: Duration(seconds: 1));
+    await stopScan();
 
-      // Connect
-      await _bluetoothManager.connect(_selectedPrinter!._device);
+    // Connect
+    await _bluetoothManager.connect(_selectedPrinter!._device);
 
-      final firstState = await _bluetoothManager.state.firstWhere((element) {
-        return element == BluetoothManager.CONNECTED;
-      }).timeout(timeout, onTimeout: () {
-        return BluetoothManager.DISCONNECTED;
-      });
+    final firstState = await _bluetoothManager.state.firstWhere((element) {
+      return element == BluetoothManager.CONNECTED;
+    }).timeout(timeout, onTimeout: () {
+      return BluetoothManager.DISCONNECTED;
+    });
 
-      if (firstState != BluetoothManager.CONNECTED) {
-        _isConnected = false;
-        return PosPrintResult.timeout;
-      }
-      _isConnected = true;
+    if (firstState != BluetoothManager.CONNECTED) {
+      // _isConnected = false;
+      return PosPrintResult.timeout;
     }
+    // _isConnected = true;
+    // }
 
     final len = bytes.length;
     List<List<int>> chunks = [];
@@ -130,7 +130,7 @@ class PrinterBluetoothManager {
       return PosPrintResult.success;
     }).catchError((e) async {
       _isPrinting = false;
-      _isConnected = false;
+      // _isConnected = false;
       if (onError != null) {
         onError(e);
       } else {
@@ -139,7 +139,7 @@ class PrinterBluetoothManager {
       return PosPrintResult.error;
     }).timeout(timeout, onTimeout: () async {
       _isPrinting = false;
-      _isConnected = false;
+      // _isConnected = false;
       if (onTimeout != null) {
         onTimeout();
       } else {
