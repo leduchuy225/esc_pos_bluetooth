@@ -66,11 +66,16 @@ class PrinterBluetoothManager {
     _selectedPrinter = printer;
   }
 
+  bool get isPrinting => _isPrinting;
+
+  PrinterBluetooth? get selectedPrinter => _selectedPrinter;
+
   Future<PosPrintResult> writeBytes(
     List<int> bytes, {
     int chunkSizeBytes = 20,
     int queueSleepTimeMs = 20,
     void Function()? onTimeout,
+    bool isConnectedCheck = true,
     void Function(List e)? onDone,
     void Function(dynamic e)? onError,
     Duration timeout = const Duration(seconds: 5),
@@ -91,15 +96,17 @@ class PrinterBluetoothManager {
     // Connect
     await _bluetoothManager.connect(_selectedPrinter!._device);
 
-    final firstState = await _bluetoothManager.state.firstWhere((element) {
-      return element == BluetoothManager.CONNECTED;
-    }).timeout(timeout, onTimeout: () {
-      return BluetoothManager.DISCONNECTED;
-    });
+    if (isConnectedCheck) {
+      final firstState = await _bluetoothManager.state.firstWhere((element) {
+        return element == BluetoothManager.CONNECTED;
+      }).timeout(timeout, onTimeout: () {
+        return BluetoothManager.DISCONNECTED;
+      });
 
-    if (firstState != BluetoothManager.CONNECTED) {
-      // _isConnected = false;
-      return PosPrintResult.timeout;
+      if (firstState != BluetoothManager.CONNECTED) {
+        // _isConnected = false;
+        return PosPrintResult.timeout;
+      }
     }
     // _isConnected = true;
     // }
@@ -122,7 +129,7 @@ class PrinterBluetoothManager {
 
     await Future.delayed(timeout);
 
-    return Future.wait(futures).then((e) async {
+    return Future.wait(futures).then((e) {
       _isPrinting = false;
       if (onDone != null) {
         onDone(e);
@@ -158,6 +165,7 @@ class PrinterBluetoothManager {
     int chunkSizeBytes = 20,
     int queueSleepTimeMs = 20,
     void Function()? onTimeout,
+    bool isConnectedCheck = true,
     void Function(List e)? onDone,
     void Function(dynamic e)? onError,
   }) async {
@@ -170,6 +178,7 @@ class PrinterBluetoothManager {
       onError: onError,
       onTimeout: onTimeout,
       chunkSizeBytes: chunkSizeBytes,
+      isConnectedCheck: isConnectedCheck,
       queueSleepTimeMs: queueSleepTimeMs,
     );
   }
