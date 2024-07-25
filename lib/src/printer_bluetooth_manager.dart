@@ -79,6 +79,7 @@ class PrinterBluetoothManager {
     void Function(List e)? onDone,
     void Function(dynamic e)? onError,
     Duration timeout = const Duration(seconds: 5),
+    dynamic Function(dynamic e)? catchErrorWhenWriteData,
   }) async {
     if (_selectedPrinter == null) {
       return PosPrintResult.printerNotSelected;
@@ -123,7 +124,16 @@ class PrinterBluetoothManager {
     _isPrinting = true;
 
     for (var i = 0; i < chunks.length; i += 1) {
-      futures.add(_bluetoothManager.writeData(chunks[i]));
+      if (chunks[i].isEmpty) {
+        continue;
+      }
+      futures.add(
+        _bluetoothManager.writeData(chunks[i]).catchError(
+              catchErrorWhenWriteData == null
+                  ? (error) => null
+                  : catchErrorWhenWriteData,
+            ),
+      );
       sleep(Duration(milliseconds: queueSleepTimeMs));
     }
 
@@ -168,6 +178,7 @@ class PrinterBluetoothManager {
     bool isConnectedCheck = true,
     void Function(List e)? onDone,
     void Function(dynamic e)? onError,
+    dynamic Function(dynamic e)? catchErrorWhenWriteData,
   }) async {
     if (bytes.isEmpty) {
       return Future<PosPrintResult>.value(PosPrintResult.ticketEmpty);
@@ -180,6 +191,7 @@ class PrinterBluetoothManager {
       chunkSizeBytes: chunkSizeBytes,
       isConnectedCheck: isConnectedCheck,
       queueSleepTimeMs: queueSleepTimeMs,
+      catchErrorWhenWriteData: catchErrorWhenWriteData,
     );
   }
 }
