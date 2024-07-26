@@ -7,7 +7,6 @@
  */
 
 import 'dart:async';
-import 'dart:io';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter_bluetooth_basic/flutter_bluetooth_basic.dart';
 import './enums.dart';
@@ -123,21 +122,21 @@ class PrinterBluetoothManager {
 
     _isPrinting = true;
 
+    final handleError = catchErrorWhenWriteData == null
+        ? (error) => null
+        : catchErrorWhenWriteData;
+
     for (var i = 0; i < chunks.length; i += 1) {
       if (chunks[i].isEmpty) {
         continue;
       }
       futures.add(
-        _bluetoothManager.writeData(chunks[i]).catchError(
-              catchErrorWhenWriteData == null
-                  ? (error) => null
-                  : catchErrorWhenWriteData,
-            ),
+        _bluetoothManager.writeData(chunks[i]).catchError(handleError),
       );
-      sleep(Duration(milliseconds: queueSleepTimeMs));
+      futures.add(
+        Future.delayed(Duration(milliseconds: queueSleepTimeMs)),
+      );
     }
-
-    await Future.delayed(timeout);
 
     return Future.wait(futures).then((e) {
       _isPrinting = false;
