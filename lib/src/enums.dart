@@ -16,6 +16,8 @@ class PosPrintResult {
   static const printInProgress = PosPrintResult._internal(5);
   static const scanInProgress = PosPrintResult._internal(6);
   static const error = PosPrintResult._internal(7);
+  static const connectSuccessful = PosPrintResult._internal(8);
+  static const connectFailure = PosPrintResult._internal(9);
 
   String get msg {
     if (value == PosPrintResult.success.value) {
